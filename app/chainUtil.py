@@ -21,9 +21,9 @@ def DeployContract(contract_path='../build/contracts/RDChain.json'):
     global contract_instance
 
     w3 = Web3(Web3.HTTPProvider("HTTP://127.0.0.1:8545"))
-    if w3.isConnected() is False:
+    if w3.is_connected() is False:
 	    raise Exception('error in connecting')
-
+ 
     with open(contract_path, 'r', encoding='utf-8') as contract_json_file:
 
         if contract_json_file is None:
@@ -32,7 +32,7 @@ def DeployContract(contract_path='../build/contracts/RDChain.json'):
         contract_json = json.load(contract_json_file)
         contract = w3.eth.contract(abi=contract_json['abi'], bytecode=contract_json['bytecode'])
         tx_hash = contract.constructor().transact({'from': w3.eth.accounts[0]})
-        tx_receipt = w3.eth.waitForTransactionReceipt(tx_hash)
+        tx_receipt = w3.eth.wait_for_transaction_receipt(tx_hash)
         contractAddress = tx_receipt.contractAddress
         contract_instance = w3.eth.contract(address=contractAddress, abi=contract_json['abi'])
 
@@ -42,14 +42,14 @@ def DeployContract(contract_path='../build/contracts/RDChain.json'):
 def addSimpleBlock(msg: str):
     
     w3 = Web3(Web3.HTTPProvider("HTTP://127.0.0.1:8545"))
-    if w3.isConnected() is False:
+    if w3.is_connected() is False:
         raise Exception('error in connecting')
     
     t0 = time()
 
     msg = binascii.hexlify(bytes(msg, encoding="utf8"))
 
-    w3.eth.sendTransaction({"from": w3.eth.accounts[0], "to": w3.eth.accounts[1], "data": msg})
+    w3.eth.send_transaction({"from": w3.eth.accounts[0], "to": w3.eth.accounts[1], "data": msg})
 
     # print("%.6f-%d" % ((time()-t0), w3.eth.get_block('latest').gasUsed), end=' ')
     print("transact recorded to chain")
@@ -63,7 +63,7 @@ def addBlock(msg: str) -> int:
     global chainData
 
     w3 = Web3(Web3.HTTPProvider("HTTP://127.0.0.1:8545"))
-    if w3.isConnected() is False:
+    if w3.is_connected() is False:
         raise Exception('error in connecting')
 
     t0 = time()
@@ -72,8 +72,8 @@ def addBlock(msg: str) -> int:
     chash = ch.ChameleonHash(PK, ch.g, msg, r)
 
     tx_hash = contract_instance.functions.extendChain(chash, r).transact({'from': w3.eth.accounts[0]})
-    tx_receipt = w3.eth.waitForTransactionReceipt(tx_hash)
-    tx_res = contract_instance.events.entendResult().processReceipt(tx_receipt)
+    tx_receipt = w3.eth.wait_for_transaction_receipt(tx_hash)
+    tx_res = contract_instance.events.entendResult().process_receipt(tx_receipt)
     blockNo = tx_res[0]['args']['blockNo']
 
     chainData[blockNo] = msg
@@ -95,7 +95,7 @@ def modifyBlock(blockNo: int, newMsg: str):
     global chainData
 
     w3 = Web3(Web3.HTTPProvider("HTTP://127.0.0.1:8545"))
-    if w3.isConnected() is False:
+    if w3.is_connected() is False:
         raise Exception('error in connecting')
 
     _, r = contract_instance.functions.getBlock(blockNo).call()
@@ -106,7 +106,7 @@ def modifyBlock(blockNo: int, newMsg: str):
     newChash = ch.ChameleonHash(PK, ch.g, newMsg, r_)
 
     tx_hash = contract_instance.functions.redactBlock(blockNo, newChash, r_).transact({'from': w3.eth.accounts[0]})
-    w3.eth.waitForTransactionReceipt(tx_hash)
+    w3.eth.wait_for_transaction_receipt(tx_hash)
 
     chainData[blockNo] = newMsg
 
@@ -122,7 +122,7 @@ def modifyBlock(blockNo: int, newMsg: str):
 
 def test(contract_instance):
     w3 = Web3(Web3.HTTPProvider("HTTP://127.0.0.1:8545"))
-    if w3.isConnected() is False:
+    if w3.is_connected() is False:
 	    raise Exception('error in connecting')
 
     contract_instance.functions.helloworld().transact({'from': w3.eth.accounts[0]})

@@ -20,7 +20,7 @@ def main():
     # connect to blockchain and deploy contract
 
     w3 = Web3(Web3.HTTPProvider("HTTP://127.0.0.1:8545"))
-    if w3.isConnected() is False:
+    if w3.is_connected() is False:
         raise Exception('error in connecting to block chain')
 
     print("connected to blockchain.\n")
